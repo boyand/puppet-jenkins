@@ -752,6 +752,117 @@ class Actions {
     out.println(builder.toPrettyString())
   }
 
+   //////////////////////////
+  // create or update a JDK
+  /////////////////////////
+  void create_or_update_jdk(String name, String java_home) {
+    def j = Jenkins.getInstance()
+    def i = new hudson.model.JDK.DescriptorImpl();
+    def jdk_list = [new hudson.model.JDK(name, java_home)]
+   
+    j.getJDKs().each { jdk ->
+      if (jdk.getName() != name) {
+        jdk_list.add(jdk)
+      }
+    }
+    i.setInstallations(jdk_list.toArray(new hudson.model.JDK[jdk_list.size()] ))
+    j.save()
+  }
+
+  /////////////////////////
+  // create or update jdk from JSON
+  /////////////////////////
+  void jdk_update_json() { // or create
+    // parse JSON doc from stdin
+    def slurper = new groovy.json.JsonSlurper()
+    def text = bindings.stdin.text
+    def conf = slurper.parseText(text)
+
+    def name = conf['name']
+    assert name != null
+    assert name instanceof String
+
+    def java_home = conf['java_home']
+    assert java_home != null
+    assert java_home instanceof String
+
+    def j = Jenkins.getInstance()
+    def i = new hudson.model.JDK.DescriptorImpl();
+    def jdk_list = [new hudson.model.JDK(name, java_home)]
+   
+    j.getJDKs().each { jdk ->
+      if (jdk.getName() != name) {
+        jdk_list.add(jdk)
+      }
+    }
+    i.setInstallations(jdk_list.toArray(new hudson.model.JDK[jdk_list.size()] ))
+    j.save()
+  }
+
+  /////////////////////////
+  // delete jdk
+  /////////////////////////
+  void delete_jdk(String name) {
+    def j = Jenkins.getInstance()
+    def d_jdk = j.getJDK(name)
+    
+    if (d_jdk != null) {
+      def jdk_list = []
+      def i = new hudson.model.JDK.DescriptorImpl();
+
+      j.getJDKs().each { jdk ->
+        if (jdk.getName() != name) {
+         jdk_list.add(jdk)
+       }
+      }
+
+      i.setInstallations(jdk_list.toArray(new hudson.model.JDK[jdk_list.size()] ))
+      j.save()
+    }
+
+  }
+
+  /////////////////////////
+  // get info about a single JDK
+  /////////////////////////
+  void jdk(String name) {
+    def j = Jenkins.getInstance()
+    def jdk = j.getJDK(name)
+
+    if (jdk == null) {
+        return null
+    }
+
+    def info = [
+      name: jdk.getName(),
+      java_home: jdk.getJavaHome(),
+    ]
+    def builder = new groovy.json.JsonBuilder(info)
+
+    out.println(builder.toPrettyString())
+  }
+
+  /////////////////////////
+  // list all JDKs as JSON
+  /////////////////////////
+  void jdk_all() {
+    def j = Jenkins.getInstance()
+    def jdks = j.getJDKs()
+
+    def allJDKs = []
+    jdks.each { jdk ->
+      def info  = [
+        name: jdk.getName(),
+        java_home: jdk.getJavaHome(),
+      ]
+      allJDKs.add(info)
+    }
+
+    def builder = new groovy.json.JsonBuilder(allJDKs)
+
+    out.println(builder.toPrettyString())
+  }
+
   ////////////////////////
   // set_jenkins_instance
   ////////////////////////
