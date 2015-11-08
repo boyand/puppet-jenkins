@@ -24,7 +24,9 @@ define jenkins::jdk (
           $title,
           $java_home,
         ],
+        unless  => "[ \$(\$HELPER_CMD jdk_exists ${title} ${$java_home}) = 'true' ]",
       }
+
     }
     'absent': {
       # XXX not idempotent
@@ -33,6 +35,7 @@ define jenkins::jdk (
           'delete_jdk',
           $title,
         ],
+        unless  => "[ \$(\$HELPER_CMD jdk ${title}) = '' ]",
       }
     }
     default: {

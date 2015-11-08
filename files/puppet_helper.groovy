@@ -843,6 +843,27 @@ class Actions {
   }
 
   /////////////////////////
+  // get info about a single JDK
+  /////////////////////////
+  void jdk_exists(String name, String java_home) {
+    def j = Jenkins.getInstance()
+    def jdk = j.getJDK(name)
+
+    if (jdk == null) {
+        out.println(false)
+        return
+    }
+
+    if (java_home != jdk.getJavaHome()) {
+        out.println(false)
+        return
+    }
+
+    out.println(true)
+    return
+  }
+
+  /////////////////////////
   // list all JDKs as JSON
   /////////////////////////
   void jdk_all() {
